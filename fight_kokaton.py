@@ -210,7 +210,7 @@ def main():
 
         # タイマーに基づき新しい爆弾を追加
         bomb_timer += 1
-        if bomb_timer % 10 == 0:  # 175フレームごとに新しい爆弾を追加（約3.5秒ごと）
+        if bomb_timer % 50 == 0:  # 50フレームごとに新しい爆弾を追加（約1秒ごと）
             bombs.append(Bomb((255, 0, 0), 10))  # 新しい爆弾をリストに追加
 
         key_lst = pg.key.get_pressed()
