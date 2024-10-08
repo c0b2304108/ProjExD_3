@@ -27,27 +27,21 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
 
 class Score:
     def __init__(self):
-        """
-        スコア表示用のクラス
-        """
-        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)  # フォントとサイズを指定
-        self.color = (0, 0, 255)  # 文字の色（青）
-        self.score = 0  # 初期スコアを0に設定
-        self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)  # スコア表示用Surface
+        
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)  
+        self.color = (0, 0, 255)
+        self.score = 0
+        self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)
         self.rct = self.img.get_rect()
-        self.rct.center = (100, HEIGHT - 50)  # 画面左下に配置
+        self.rct.center = (100, HEIGHT - 50)
 
     def update(self, screen: pg.Surface):
-        """
-        スコアを更新して画面に表示する
-        """
-        self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)  # スコア表示を更新
+        
+        self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)  
         screen.blit(self.img, self.rct)
 
     def add_score(self, points: int):
-        """
-        スコアにポイントを加算する
-        """
+        
         self.score += points
 
 
@@ -173,7 +167,7 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
-    beam = None
+    beams = []
     #bomb = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255,0,0), 10) for _ in range(NUM_OF_BOMBS)]
     score = Score()
@@ -187,7 +181,7 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下でBeamクラスのインスタンス生成
-                beam = Beam(bird)            
+                beams.append(Beam(bird))            
         screen.blit(bg_img, [0, 0])
         
         for bomb in bombs:
@@ -203,23 +197,25 @@ def main():
         
         
         for j, bomb in enumerate(bombs):
-            if beam is not None:
-                if beam.rct.colliderect(bomb.rct):
-                    beam, bombs[j] = None, None
+            for i, beam in enumerate(beams):
+                if beam is not None and beam.rct.colliderect(bomb.rct):
+                    beams[i] = None
+                    bombs[j] = None
                     bird.change_img(6, screen)
                     pg.display.update()
                     score.add_score(1)
         #time.sleep(1)
+        beams = [beam for beam in beams if beam is not None and check_bound(beam.rct) == (True, True)]
         bombs = [bomb for bomb in bombs if bomb is not None]
 
         # タイマーに基づき新しい爆弾を追加
         bomb_timer += 1
-        if bomb_timer % 175 == 0:  # 300フレームごとに新しい爆弾を追加（約6秒ごと）
+        if bomb_timer % 10 == 0:  # 175フレームごとに新しい爆弾を追加（約3.5秒ごと）
             bombs.append(Bomb((255, 0, 0), 10))  # 新しい爆弾をリストに追加
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        if beam is not None:
+        for beam in beams:
             beam.update(screen)
         for bomb in bombs:
             bomb.update(screen)
