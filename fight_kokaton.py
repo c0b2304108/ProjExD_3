@@ -25,27 +25,29 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+
+
 class Bird:
     """
     ゲームキャラクター（こうかとん）に関するクラス
     """
     delta = {  # 押下キーと移動量の辞書
-        pg.K_UP: (0, -5),
-        pg.K_DOWN: (0, +5),
-        pg.K_LEFT: (-5, 0),
-        pg.K_RIGHT: (+5, 0),
+        pg.K_UP: (0, -15),
+        pg.K_DOWN: (0, +15),
+        pg.K_LEFT: (-15, 0),
+        pg.K_RIGHT: (+15, 0),
     }
     img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
     img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
     imgs = {  # 0度から反時計回りに定義
-        (+5, 0): img,  # 右
-        (+5, -5): pg.transform.rotozoom(img, 45, 0.9),  # 右上
-        (0, -5): pg.transform.rotozoom(img, 90, 0.9),  # 上
-        (-5, -5): pg.transform.rotozoom(img0, -45, 0.9),  # 左上
-        (-5, 0): img0,  # 左
-        (-5, +5): pg.transform.rotozoom(img0, 45, 0.9),  # 左下
-        (0, +5): pg.transform.rotozoom(img, -90, 0.9),  # 下
-        (+5, +5): pg.transform.rotozoom(img, -45, 0.9),  # 右下
+        (+15, 0): img,  # 右
+        (+15, -15): pg.transform.rotozoom(img, 45, 0.9),  # 右上
+        (0, -15): pg.transform.rotozoom(img, 90, 0.9),  # 上
+        (-15, -15): pg.transform.rotozoom(img0, -45, 0.9),  # 左上
+        (-15, 0): img0,  # 左
+        (-15, +15): pg.transform.rotozoom(img0, 45, 0.9),  # 左下
+        (0, +15): pg.transform.rotozoom(img, -90, 0.9),  # 下
+        (+15, +15): pg.transform.rotozoom(img, -45, 0.9),  # 右下
     }
 
     def __init__(self, xy: tuple[int, int]):
@@ -53,7 +55,7 @@ class Bird:
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.img = __class__.imgs[(+5, 0)]
+        self.img = __class__.imgs[(+15, 0)]
         self.rct: pg.Rect = self.img.get_rect()
         self.rct.center = xy
 
@@ -92,7 +94,7 @@ class Beam:
         self.rct = self.img.get_rect()
         self.rct.centery = bird.rct.centery
         self.rct.left = bird.rct.right
-        self.vx, self.vy = +5, 0
+        self.vx, self.vy = +20, 0
 
     def update(self, screen: pg.Surface):
     #     """
@@ -124,6 +126,16 @@ class Bomb:
         self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
         self.vx, self.vy = +5, +5
 
+    # def create_bomb() -> tuple[pg.Surface, pg.Rect, int, int]:
+    
+    # bb_img = pg.Surface((20, 20))
+    # pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
+    # bb_img.set_colorkey((0, 0, 0))
+    # bb_rct = bb_img.get_rect()
+    # bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    # vx, vy = random.choice([-10, 10]), random.choice([-10, 10])
+    # return bb_img, bb_rct, vx, vy
+
     def update(self, screen: pg.Surface):
         """
         爆弾を速度ベクトルself.vx, self.vyに基づき移動させる
@@ -146,8 +158,10 @@ def main():
     beam = None
     #bomb = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255,0,0), 10) for _ in range(NUM_OF_BOMBS)]
+    #bombs = [create_bomb()]
     clock = pg.time.Clock()
     tmr = 0
+    bomb_timer = 0
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -172,11 +186,16 @@ def main():
         for j, bomb in enumerate(bombs):
             if beam is not None:
                 if beam.rct.colliderect(bomb.rct):
-                    beam, bomb = None, None
+                    beam, bombs[j] = None, None
                     bird.change_img(6, screen)
                     pg.display.update()
         #time.sleep(1)
         bombs = [bomb for bomb in bombs if bomb is not None]
+
+        # タイマーに基づき新しい爆弾を追加
+        bomb_timer += 1
+        if bomb_timer % 300 == 0:  # 300フレームごとに新しい爆弾を追加（約6秒ごと）
+            bombs.append(Bomb((255, 0, 0), 10))  # 新しい爆弾をリストに追加
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
