@@ -25,6 +25,33 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+class Score:
+    def __init__(self):
+        """
+        スコア表示用のクラス
+        """
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)  # フォントとサイズを指定
+        self.color = (0, 0, 255)  # 文字の色（青）
+        self.score = 0  # 初期スコアを0に設定
+        self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)  # スコア表示用Surface
+        self.rct = self.img.get_rect()
+        self.rct.center = (100, HEIGHT - 50)  # 画面左下に配置
+
+    def update(self, screen: pg.Surface):
+        """
+        スコアを更新して画面に表示する
+        """
+        self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)  # スコア表示を更新
+        screen.blit(self.img, self.rct)
+
+    def add_score(self, points: int):
+        """
+        スコアにポイントを加算する
+        """
+        self.score += points
+
+
+
 
 
 class Bird:
@@ -124,17 +151,8 @@ class Bomb:
         self.img.set_colorkey((0, 0, 0))
         self.rct = self.img.get_rect()
         self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-        self.vx, self.vy = +5, +5
+        self.vx, self.vy = +10, +10
 
-    # def create_bomb() -> tuple[pg.Surface, pg.Rect, int, int]:
-    
-    # bb_img = pg.Surface((20, 20))
-    # pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
-    # bb_img.set_colorkey((0, 0, 0))
-    # bb_rct = bb_img.get_rect()
-    # bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-    # vx, vy = random.choice([-10, 10]), random.choice([-10, 10])
-    # return bb_img, bb_rct, vx, vy
 
     def update(self, screen: pg.Surface):
         """
@@ -158,7 +176,8 @@ def main():
     beam = None
     #bomb = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255,0,0), 10) for _ in range(NUM_OF_BOMBS)]
-    #bombs = [create_bomb()]
+    score = Score()
+
     clock = pg.time.Clock()
     tmr = 0
     bomb_timer = 0
@@ -189,12 +208,13 @@ def main():
                     beam, bombs[j] = None, None
                     bird.change_img(6, screen)
                     pg.display.update()
+                    score.add_score(1)
         #time.sleep(1)
         bombs = [bomb for bomb in bombs if bomb is not None]
 
         # タイマーに基づき新しい爆弾を追加
         bomb_timer += 1
-        if bomb_timer % 300 == 0:  # 300フレームごとに新しい爆弾を追加（約6秒ごと）
+        if bomb_timer % 175 == 0:  # 300フレームごとに新しい爆弾を追加（約6秒ごと）
             bombs.append(Bomb((255, 0, 0), 10))  # 新しい爆弾をリストに追加
 
         key_lst = pg.key.get_pressed()
@@ -203,6 +223,7 @@ def main():
             beam.update(screen)
         for bomb in bombs:
             bomb.update(screen)
+        score.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
