@@ -45,9 +45,6 @@ class Score:
         self.score += points
 
 
-
-
-
 class Bird:
     """
     ゲームキャラクター（こうかとん）に関するクラス
@@ -108,7 +105,6 @@ class Bird:
         screen.blit(self.img, self.rct)
 
 
-# ビームクラス:
 class Beam:
     def __init__(self, bird:"Bird"):
         self.img = pg.image.load("fig/beam.png")
@@ -125,9 +121,6 @@ class Beam:
         if check_bound(self.rct) == (True, True):
             self.rct.move_ip(self.vx, self.vy)
             screen.blit(self.img, self.rct)    
-
-
-
 
 
 class Bomb:
